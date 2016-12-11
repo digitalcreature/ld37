@@ -15,12 +15,10 @@ public class PlayerController : SingletonBehaviour<PlayerController> {
 
 	Camera cam;
 	CharacterController controller;
-	PlayerGrab grab;
 
 	void Awake() {
 		controller = GetComponent<CharacterController>();
 		cam = GetComponentInChildren<Camera>();
-		grab = PlayerGrab.instance;
 		controller.slopeLimit = 90;
 		controller.stepOffset = 0;
 		if (!Application.isEditor) {
@@ -44,14 +42,6 @@ public class PlayerController : SingletonBehaviour<PlayerController> {
 		euler.x = Mathf.Clamp(angle - look.y, -90, 90);
 		cam.transform.localEulerAngles = euler;
 		controller.Move(transform.rotation * move);
-		if (Input.GetMouseButtonDown(0)) {
-			if (grab.grabbed) {
-				grab.Release();
-			}
-			else {
-				grab.Grab(Object.FindObjectOfType<Grabbable>());
-			}
-		}
 	}
 
 }

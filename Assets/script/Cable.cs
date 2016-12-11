@@ -122,6 +122,7 @@ public class Cable : MonoBehaviour {
 			collide.radius = cable.thickness / 2;
 			transform.parent = cable.transform;
 			body.mass = cable.segmentMass;
+			gameObject.layer = cable.gameObject.layer;
 		}
 
 		public void Connect(Segment previous, int i) {
