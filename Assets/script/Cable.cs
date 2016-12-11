@@ -98,7 +98,7 @@ public class Cable : MonoBehaviour {
 		public Cable cable;
 		public SphereCollider collide;
 		public Rigidbody body;
-		public HingeJoint joint;
+		public ConfigurableJoint joint;
 
 		public override void OnCreate() {
 			collide = gameObject.AddComponent<SphereCollider>();
@@ -107,7 +107,7 @@ public class Cable : MonoBehaviour {
 		}
 
 		void CreateJoint() {
-			joint = gameObject.AddComponent<HingeJoint>();
+			joint = gameObject.AddComponent<ConfigurableJoint>();
 			joint.autoConfigureConnectedAnchor = false;
 			joint.enableCollision = false;
 		}
@@ -126,13 +126,20 @@ public class Cable : MonoBehaviour {
 				Vector3 anchor = - Vector3.forward * cable.segmentLength;
 				joint.anchor = anchor;
 				joint.connectedAnchor = Vector3.zero;
-				joint.axis = (i % 2 == 0) ? Vector3.up : Vector3.right;
-				JointLimits limits = joint.limits;
-				limits.min = -cable.maxBend;
-				limits.max = cable.maxBend;
-				limits.bounciness = 0;
-				limits.bounceMinVelocity = 0;
-				joint.limits = limits;
+				// joint.axis = (i % 2 == 0) ? Vector3.up : Vector3.right;
+				// JointLimits limits = joint.limits;
+				// limits.min = -cable.maxBend;
+				// limits.max = cable.maxBend;
+				// limits.bounciness = 0;
+				// limits.bounceMinVelocity = 0;
+				// joint.limits = limits;
+				joint.xMotion = ConfigurableJointMotion.Limited;
+				joint.yMotion = ConfigurableJointMotion.Limited;
+				joint.zMotion = ConfigurableJointMotion.Limited;
+				SoftJointLimitSpring limitSpring = joint.linearLimitSpring;
+				limitSpring.damper = 0;
+				limitSpring.spring = 0;
+				joint.linearLimitSpring = limitSpring;
 				transform.position = previous.transform.position + (cable.transform.forward * cable.segmentLength);
 			}
 			else {
