@@ -7,18 +7,20 @@ public class Cable : MonoBehaviour {
 	public float length = 12;
 	public float segmentLength = 0.25f;
 	public float maxBend = 75;
+	public float segmentMass = 50;
 
 	public float thickness = 0.15f;
 
-	public Rigidbody body { get; private set; }
 	public LineRenderer render { get; private set; }
+
+	public Rigidbody endA;
+	public Rigidbody endB;
 
 	List<Segment> segments;
 
 	Vector3[] segmentPositions;
 
 	void Awake() {
-		body = gameObject.AddComponent<Rigidbody>();
 		segments = new List<Segment>();
 		render = GetComponent<LineRenderer>();
 	}
@@ -34,6 +36,10 @@ public class Cable : MonoBehaviour {
 	void UpdateSegments() {
 		int oldCount = segments.Count;
 		int newCount = (int) (length / segmentLength);
+		if (oldCount != 0) {
+			Destroy(segments[0].GetComponent<FixedJoint>());
+			Destroy(segments[oldCount - 1].GetComponent<FixedJoint>());
+		}
 		segmentPositions = new Vector3[newCount];
 		if (newCount > oldCount) {
 			Segment previous = null;
@@ -52,6 +58,19 @@ public class Cable : MonoBehaviour {
 				Segment.Free(segments[i]);
 			}
 			segments.RemoveRange(newCount, oldCount - newCount);
+		}
+		if (newCount != 0) {
+			AddEndJoint(endA, segments[0]);
+			AddEndJoint(endB, segments[newCount - 1]);
+		}
+	}
+
+	void AddEndJoint(Rigidbody end, Segment segment) {
+		if (end != null) {
+			FixedJoint joint = segment.gameObject.AddComponent<FixedJoint>();
+			joint.connectedBody = end;
+			joint.autoConfigureConnectedAnchor = false;
+			joint.connectedAnchor = Vector3.zero;
 		}
 	}
 
@@ -90,7 +109,6 @@ public class Cable : MonoBehaviour {
 		void CreateJoint() {
 			joint = gameObject.AddComponent<HingeJoint>();
 			joint.autoConfigureConnectedAnchor = false;
-			joint.useLimits = true;
 			joint.enableCollision = false;
 		}
 
@@ -98,6 +116,7 @@ public class Cable : MonoBehaviour {
 			this.cable = cable;
 			collide.radius = cable.thickness / 2;
 			transform.parent = cable.transform;
+			body.mass = cable.segmentMass;
 		}
 
 		public void Connect(Segment previous, int i) {
