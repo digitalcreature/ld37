@@ -12,8 +12,8 @@ public class VerletCable : MonoBehaviour {
 	public float thickness = 0.1f;
 	public float segmentLength = 0.1f;
 	public float damp = 0.1f;
-	public Transform endA;
-	public Transform endB;
+	public VerletCableHandle handleA;
+	public VerletCableHandle handleB;
 
 	Vector3[] points;
 	Vector3[] lastPoints;
@@ -43,8 +43,8 @@ public class VerletCable : MonoBehaviour {
 			Vector3 lastPoint = lastPoints[p];
 			lastPoints[p] = point;
 			Vector3 vel = point - lastPoint;
-			vel += Vector3.down * gravity * step * step;
 			vel *= (1 - damp);
+			vel += Vector3.down * gravity * step * step;
 			point += vel;
 			points[p] = point;
 		}
@@ -63,9 +63,9 @@ public class VerletCable : MonoBehaviour {
 					other -= delta;
 					points[p - 1] = other;
 				}
-				// constrain end points
-				if (p == 0 && endA) point = endA.position;
-				if (p == (count - 1) && endB) point = endB.position;
+				// constrain points to handles (if they exist and are grabbed)
+				if (p == 0 && handleA && handleA.isGrabbed) point = handleA.transform.position;
+				if (p == (count - 1) && handleB && handleB.isGrabbed) point = handleB.transform.position;
 				// solve collisions with obstacles
 				foreach (VerletObstacle obstacle in VerletObstacle.all) {
 					Bounds bounds = obstacle.bounds;
@@ -92,6 +92,11 @@ public class VerletCable : MonoBehaviour {
 				point.z = Mathf.Clamp(point.z, roomBounds.min.z, roomBounds.max.z);
 				points[p] = point;
 			}
+		}
+		// if handles arent grabbed, constrain to points
+		if (count > 0) {
+			if (handleA && !handleA.isGrabbed) handleA.transform.position = points[0];
+			if (handleB && !handleB.isGrabbed) handleB.transform.position = points[count - 1];
 		}
 		// update line renderer
 		if (render && count > 0) {

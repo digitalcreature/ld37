@@ -18,9 +18,15 @@ public class Grabbable : MonoBehaviour {
 
 	public void SetGrabbed(bool grabbed) {
 		this.isGrabbed = grabbed;
-		body.isKinematic = grabbed;
+		if (body) body.isKinematic = grabbed;
 		foreach (Collider collider in GetComponentsInChildren<Collider>()) {
 			collider.isTrigger = grabbed;
+		}
+		if (grabbed) {
+			OnGrab();
+		}
+		else {
+			OnRelease();
 		}
 	}
 
@@ -30,5 +36,8 @@ public class Grabbable : MonoBehaviour {
 		Gizmos.DrawWireSphere(transform.position, radius);
 		Gizmos.color = c;
 	}
+
+	public virtual void OnGrab() {}
+	public virtual void OnRelease() {}
 
 }
