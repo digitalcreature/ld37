@@ -80,8 +80,14 @@ public class VerletCable : MonoBehaviour {
 					}
 				}
 				// constrain points to handles (if they exist and are grabbed)
-				if (p == 0 && handleA && handleA.isGrabbed) point = handleA.transform.position;
-				if (p == (count - 1) && handleB && handleB.isGrabbed) point = handleB.transform.position;
+				if (p == 0 && handleA && handleA.isStatic) {
+					point = handleA.transform.position;
+					points[1] = point - (handleA.transform.forward * segmentLength);
+				}
+				if (p == (count - 1) && handleB && handleB.isStatic) {
+					point = handleB.transform.position;
+					points[count - 2] = point - (handleB.transform.forward * segmentLength);
+				}
 				// solve collisions with obstacles
 				foreach (VerletObstacle obstacle in VerletObstacle.all) {
 					Bounds bounds = obstacle.bounds;
@@ -111,8 +117,14 @@ public class VerletCable : MonoBehaviour {
 		}
 		// if handles arent grabbed, constrain to points
 		if (count > 0) {
-			if (handleA && !handleA.isGrabbed) handleA.transform.position = points[0];
-			if (handleB && !handleB.isGrabbed) handleB.transform.position = points[count - 1];
+			if (handleA && !handleA.isStatic) {
+				handleA.transform.position = points[0];
+				handleA.transform.forward = (points[0] - points[1]);
+			}
+			if (handleB && !handleB.isStatic) {
+				handleB.transform.position = points[count - 1];
+				handleB.transform.forward = (points[count - 1] - points[count - 2]);
+			}
 		}
 		// update line renderer
 		if (render && count > 0) {

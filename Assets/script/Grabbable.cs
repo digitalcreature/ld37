@@ -6,19 +6,10 @@ public class Grabbable : MonoBehaviour {
 
 	public float radius = 0.5f;
 
-	public Rigidbody body { get; private set; }
-
 	public bool isGrabbed { get; private set; }
-
-	int oldLayer;
-
-	void Awake() {
-		body = GetComponent<Rigidbody>();
-	}
 
 	public void SetGrabbed(bool grabbed) {
 		this.isGrabbed = grabbed;
-		if (body) body.isKinematic = grabbed;
 		foreach (Collider collider in GetComponentsInChildren<Collider>()) {
 			collider.isTrigger = grabbed;
 		}
