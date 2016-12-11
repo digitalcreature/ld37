@@ -12,6 +12,7 @@ public class VerletCable : MonoBehaviour {
 	public float thickness = 0.1f;
 	public float segmentLength = 0.1f;
 	public float damp = 0.1f;
+	public float bendLimit = 5;
 	public VerletCableHandle handleA;
 	public VerletCableHandle handleB;
 
@@ -35,6 +36,10 @@ public class VerletCable : MonoBehaviour {
 	void FixedUpdate() {
 		float step = Time.fixedDeltaTime;
 		int count = points.Length;
+		float bendLimitDistance = Mathf.Sqrt(								// law of cosines; use to constain angles
+			2 * segmentLength * segmentLength
+			* (1 - Mathf.Cos(Mathf.Deg2Rad * (180 - bendLimit)))
+		);
 		Bounds roomBounds = this.roomBounds;
 		roomBounds.Expand(- Vector3.one * thickness);	// account for radius when constraining to room
 		// update points (gravity and velocity)
@@ -55,13 +60,24 @@ public class VerletCable : MonoBehaviour {
 				// Vector3 lastPoint = lastPoints[p];
 				// distance constraints
 				if (p > 0) {
-					Vector3 other = points[p - 1];
-					float distance = (point - other).magnitude;
-					float ratio = (segmentLength - distance) / distance / 2;
-					Vector3 delta = (point - other) * ratio;
-					point += delta;
-					other -= delta;
-					points[p - 1] = other;
+					DistanceConstraint(segmentLength, p, p - 1);
+					point = points[p];
+				}
+				//collision constraints
+				// for (int q = 0; q < p; q ++) {
+				// 	float distance = (points[p] - points[q]).magnitude;
+				// 	if (distance < thickness) {
+				// 		DistanceConstraint(thickness, p, q);
+				// 	}
+				// }
+				// point = points[p];
+				// angle constraints
+				if (p > 1) {
+					float distance = (point - points[p - 2]).magnitude;
+					if (distance < bendLimitDistance) {
+						DistanceConstraint(bendLimitDistance, p, p - 2);
+						point = points[p];
+					}
 				}
 				// constrain points to handles (if they exist and are grabbed)
 				if (p == 0 && handleA && handleA.isGrabbed) point = handleA.transform.position;
@@ -106,6 +122,18 @@ public class VerletCable : MonoBehaviour {
 			render.numPositions = count;
 			render.SetPositions(points);
 		}
+	}
+
+	void DistanceConstraint(float target, int a, int b) {
+		Vector3 point = points[a];
+		Vector3 other = points[b];
+		float distance = (point - other).magnitude;
+		float ratio = (target - distance) / distance / 2;
+		Vector3 delta = (point - other) * ratio;
+		point += delta;
+		other -= delta;
+		points[a] = point;
+		points[b] = other;
 	}
 
 	void OnDrawGizmosSelected() {
