@@ -2,19 +2,30 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : SingletonBehaviour<PlayerController> {
 
 	public float moveSpeed = 5;
 	public float sensitivity = 5;
 
-	Camera camera;
+	public Vector3 lookDirection {
+		get {
+			return cam.transform.forward;
+		}
+	}
+
+	Camera cam;
 	CharacterController controller;
+	PlayerGrab grab;
 
 	void Awake() {
 		controller = GetComponent<CharacterController>();
-		camera = GetComponentInChildren<Camera>();
+		cam = GetComponentInChildren<Camera>();
+		grab = PlayerGrab.instance;
 		controller.slopeLimit = 90;
 		controller.stepOffset = 0;
+		if (!Application.isEditor) {
+			Cursor.lockState = CursorLockMode.Locked;
+		}
 	}
 
 	void Update() {
@@ -28,11 +39,19 @@ public class PlayerController : MonoBehaviour {
 			Input.GetAxis("Mouse Y")
 		) * sensitivity;
 		transform.Rotate(0, look.x, 0);
-		Vector3 euler = camera.transform.localEulerAngles;
-		float angle = Vector3.Angle(Vector3.up, camera.transform.forward) - 90;
+		Vector3 euler = cam.transform.localEulerAngles;
+		float angle = Vector3.Angle(Vector3.up, cam.transform.forward) - 90;
 		euler.x = Mathf.Clamp(angle - look.y, -90, 90);
-		camera.transform.localEulerAngles = euler;
+		cam.transform.localEulerAngles = euler;
 		controller.Move(transform.rotation * move);
+		if (Input.GetMouseButtonDown(0)) {
+			if (grab.grabbed) {
+				grab.Release();
+			}
+			else {
+				grab.Grab(Object.FindObjectOfType<Grabbable>());
+			}
+		}
 	}
 
 }

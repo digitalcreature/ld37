@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PooledBehaviour<T, D> : MonoBehaviour
+public abstract class PooledBehaviour<T, D> : MonoBehaviour
 	where T : PooledBehaviour<T, D>
 	where D : class {
 
