@@ -19,8 +19,6 @@ public class PlayerController : SingletonBehaviour<PlayerController> {
 	void Awake() {
 		controller = GetComponent<CharacterController>();
 		cam = GetComponentInChildren<Camera>();
-		controller.slopeLimit = 90;
-		controller.stepOffset = 0;
 		if (!Application.isEditor) {
 			Cursor.lockState = CursorLockMode.Locked;
 		}
@@ -31,7 +29,7 @@ public class PlayerController : SingletonBehaviour<PlayerController> {
 			Input.GetAxisRaw("Horizontal"),
 			0,
 			Input.GetAxisRaw("Vertical")
-		) * moveSpeed * Time.deltaTime;
+		) * moveSpeed;
 		Vector2 look = new Vector2(
 			Input.GetAxis("Mouse X"),
 			Input.GetAxis("Mouse Y")
@@ -41,7 +39,7 @@ public class PlayerController : SingletonBehaviour<PlayerController> {
 		float angle = Vector3.Angle(Vector3.up, cam.transform.forward) - 90;
 		euler.x = Mathf.Clamp(angle - look.y, -90, 90);
 		cam.transform.localEulerAngles = euler;
-		controller.Move(transform.rotation * move);
+		controller.SimpleMove(transform.rotation * move);
 	}
 
 }
