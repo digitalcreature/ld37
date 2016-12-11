@@ -15,6 +15,7 @@ public class Cable : MonoBehaviour {
 
 	public Rigidbody endA;
 	public Rigidbody endB;
+	public bool generateOnStart = false;
 
 	List<Segment> segments;
 
@@ -26,14 +27,16 @@ public class Cable : MonoBehaviour {
 	}
 
 	void Start() {
-		UpdateSegments();
+		if (generateOnStart) {
+			GenerateSegments();
+		}
 	}
 
 	void Update() {
 		UpdateLineRenderer();
 	}
 
-	void UpdateSegments() {
+	public void GenerateSegments() {
 		int oldCount = segments.Count;
 		int newCount = (int) (length / segmentLength);
 		if (oldCount != 0) {
@@ -76,14 +79,16 @@ public class Cable : MonoBehaviour {
 
 	void UpdateLineRenderer() {
 		if (render != null) {
-			render.startWidth = thickness;
-			render.endWidth = thickness;
-			render.numPositions = segments.Count;
-			render.useWorldSpace = true;
-			for (int i = 0; i < segments.Count; i ++) {
-				segmentPositions[i] = segments[i].transform.position;
+			if (segmentPositions != null && segmentPositions.Length > 0) {
+				render.startWidth = thickness;
+				render.endWidth = thickness;
+				render.numPositions = segments.Count;
+				render.useWorldSpace = true;
+				for (int i = 0; i < segments.Count; i ++) {
+					segmentPositions[i] = segments[i].transform.position;
+				}
+				render.SetPositions(segmentPositions);
 			}
-			render.SetPositions(segmentPositions);
 		}
 	}
 
